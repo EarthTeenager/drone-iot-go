@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>无人机IoT实时监控 - drone-iot-demo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Microsoft YaHei', Arial, sans-serif; background: #0a0e27; color: #e0e0e0; padding: 20px; }
+  .header { text-align: center; padding: 15px 0; border-bottom: 2px solid #1e90ff; margin-bottom: 20px; }
+  .header h1 { color: #1e90ff; font-size: 24px; }
+  .header .status-bar { margin-top: 8px; font-size: 13px; color: #888; }
+  .status-bar .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+  .dot.online { background: #00ff88; }
+  .dot.offline { background: #ff4444; }
+
+  .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+
+  .card { background: #141a38; border: 1px solid #2a2f50; border-radius: 8px; padding: 16px; }
+  .card h3 { font-size: 15px; color: #1e90ff; margin-bottom: 12px; border-bottom: 1px solid #2a2f50; padding-bottom: 8px; }
+  .card .row { display: flex; justify-content: space-between; margin: 6px 0; font-size: 13px; }
+  .card .row label { color: #888; }
+  .card .row span { font-weight: bold; font-family: 'Consolas', monospace; }
+
+  .alert-section { margin-top: 20px; }
+  .alert-section h2 { color: #ff4444; font-size: 16px; margin-bottom: 10px; }
+  .alert-list { max-height: 200px; overflow-y: auto; }
+  .alert-item { background: #2a1a1a; border-left: 3px solid #ff4444; padding: 8px 12px; margin: 5px 0; font-size: 12px; border-radius: 0 4px 4px 0; }
+  .alert-item .time { color: #888; margin-right: 10px; }
+
+  .footer { text-align: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #2a2f50; font-size: 12px; color: #666; }
+  .footer a { color: #1e90ff; text-decoration: none; }
+
+  .battery-bar { width: 60px; height: 12px; background: #2a2f50; border-radius: 6px; display: inline-block; overflow: hidden; vertical-align: middle; }
+  .battery-bar .fill { height: 100%; border-radius: 6px; transition: width 0.5s; }
+  .fill.high { background: #00ff88; }
+  .fill.mid { background: #ffaa00; }
+  .fill.low { background: #ff4444; }
+
+  .command-panel { margin-top: 20px; background: #141a38; border: 1px solid #2a2f50; border-radius: 8px; padding: 16px; }
+  .command-panel h2 { color: #ffaa00; font-size: 16px; margin-bottom: 10px; }
+  .cmd-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+  .cmd-btn { background: #1e90ff; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+  .cmd-btn:hover { background: #4169e1; }
+  .cmd-btn.danger { background: #ff4444; }
+  .cmd-btn.danger:hover { background: #cc3333; }
+  .cmd-btn.warn { background: #ffaa00; }
+  .cmd-btn.warn:hover { background: #cc8800; }
+  .device-select { background: #1a1e35; color: #e0e0e0; border: 1px solid #2a2f50; padding: 6px 12px; border-radius: 4px; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>无人机IoT实时监控系统</h1>
+  <div class="status-bar">
+    WebSocket: <span class="dot online" id="ws-dot"></span><span id="ws-status">连接中...</span>
+    &nbsp;|&nbsp; 在线设备: <span id="online-count">0</span> 台
+    &nbsp;|&nbsp; MQTT消息: <span id="msg-count">0</span> 条
+  </div>
+</div>
+
+<!-- 3台无人机状态卡片 -->
+<div class="dashboard" id="drone-cards">
+  <div class="card" id="card-drone-001">
+    <h3>drone-001 大疆M300-001</h3>
+    <div class="row"><label>状态</label><span style="color:#00ff88" id="status-drone-001">等待数据...</span></div>
+    <div class="row"><label>坐标</label><span id="pos-drone-001">-, -</span></div>
+    <div class="row"><label>高度</label><span id="alt-drone-001">-</span></div>
+    <div class="row"><label>速度</label><span id="speed-drone-001">-</span></div>
+    <div class="row"><label>电量</label><span><span class="battery-bar"><span class="fill high" id="bat-drone-001" style="width:0%"></span></span> <span id="bat-txt-drone-001">-</span></span></div>
+    <div class="row"><label>飞行模式</label><span id="mode-drone-001">-</span></div>
+  </div>
+  <div class="card" id="card-drone-002">
+    <h3>drone-002 大疆M300-002</h3>
+    <div class="row"><label>状态</label><span style="color:#888" id="status-drone-002">等待数据...</span></div>
+    <div class="row"><label>坐标</label><span id="pos-drone-002">-, -</span></div>
+    <div class="row"><label>高度</label><span id="alt-drone-002">-</span></div>
+    <div class="row"><label>速度</label><span id="speed-drone-002">-</span></div>
+    <div class="row"><label>电量</label><span><span class="battery-bar"><span class="fill high" id="bat-drone-002" style="width:0%"></span></span> <span id="bat-txt-drone-002">-</span></span></div>
+    <div class="row"><label>飞行模式</label><span id="mode-drone-002">-</span></div>
+  </div>
+  <div class="card" id="card-drone-003">
+    <h3>drone-003 大疆M300-003</h3>
+    <div class="row"><label>状态</label><span style="color:#888" id="status-drone-003">等待数据...</span></div>
+    <div class="row"><label>坐标</label><span id="pos-drone-003">-, -</span></div>
+    <div class="row"><label>高度</label><span id="alt-drone-003">-</span></div>
+    <div class="row"><label>速度</label><span id="speed-drone-003">-</span></div>
+    <div class="row"><label>电量</label><span><span class="battery-bar"><span class="fill high" id="bat-drone-003" style="width:0%"></span></span> <span id="bat-txt-drone-003">-</span></span></div>
+    <div class="row"><label>飞行模式</label><span id="mode-drone-003">-</span></div>
+  </div>
+</div>
+
+<!-- 告警区域 -->
+<div class="alert-section">
+  <h2>实时告警</h2>
+  <div class="alert-list" id="alert-list">
+    <div style="color:#666; text-align:center; padding:20px;">暂无告警，等待异常数据...</div>
+  </div>
+</div>
+
+<!-- 指令下发面板 -->
+<div class="command-panel">
+  <h2>遥控指令下发（双向通信验证）</h2>
+  <div style="margin-bottom:10px;">
+    选择设备:
+    <select class="device-select" id="cmd-device">
+      <option value="drone-001">drone-001</option>
+      <option value="drone-002">drone-002</option>
+      <option value="drone-003">drone-003</option>
+    </select>
+  </div>
+  <div class="cmd-btns">
+    <button class="cmd-btn" onclick="sendCommand('takeoff')">起飞 Takeoff</button>
+    <button class="cmd-btn warn" onclick="sendCommand('return_home')">返航 Return Home</button>
+    <button class="cmd-btn danger" onclick="sendCommand('land')">降落 Land</button>
+    <button class="cmd-btn" onclick="sendCommand('lock_motor')">锁定电机 Lock Motor</button>
+  </div>
+  <div id="cmd-result" style="margin-top:10px; font-size:12px; color:#888;"></div>
+</div>
+
+<div class="footer">
+  drone-iot-demo v1.0 | 面试现场演示 | 前后端实时数据链路完整演示
+</div>
+
+<script>
+var msgCount = 0;
+
+// WebSocket连接
+function connectWS() {
+  var ws = new WebSocket('ws://' + location.host + '/ws');
+
+  ws.onopen = function() {
+    document.getElementById('ws-status').textContent = '已连接';
+    document.getElementById('ws-dot').className = 'dot online';
+  };
+
+  ws.onclose = function() {
+    document.getElementById('ws-status').textContent = '已断开，5s后重连...';
+    document.getElementById('ws-dot').className = 'dot offline';
+    setTimeout(connectWS, 5000);
+  };
+
+  ws.onmessage = function(evt) {
+    var msg = JSON.parse(evt.data);
+    msgCount++;
+    document.getElementById('msg-count').textContent = msgCount;
+
+    if (msg.type === 'status') {
+      updateDroneCard(msg.data);
+    } else if (msg.type === 'alert') {
+      showAlert(msg);
+    }
+  };
+
+  ws.onerror = function() {
+    document.getElementById('ws-status').textContent = '连接错误';
+    document.getElementById('ws-dot').className = 'dot offline';
+  };
+}
+
+// 更新无人机卡片
+function updateDroneCard(data) {
+  var id = data.device_id || data.DeviceID;
+  var card = document.getElementById('card-' + id);
+  if (card) card.style.borderColor = '#00ff88';
+
+  setText('status-' + id, '在线', '#00ff88');
+  setText('pos-' + id, (data.latitude||data.Latitude).toFixed(4) + ', ' + (data.longitude||data.Longitude).toFixed(4));
+  setText('alt-' + id, (data.altitude||data.Altitude).toFixed(1) + ' m');
+  setText('speed-' + id, (data.speed||data.Speed).toFixed(1) + ' m/s');
+
+  var bat = data.battery || data.Battery;
+  setText('bat-txt-' + id, bat + '%');
+  var bar = document.getElementById('bat-' + id);
+  bar.style.width = bat + '%';
+  bar.className = 'fill ' + (bat > 50 ? 'high' : bat > 20 ? 'mid' : 'low');
+
+  setText('mode-' + id, data.flight_mode || data.FlightMode);
+
+  // 更新在线计数
+  var cards = document.querySelectorAll('.card');
+  var online = 0;
+  cards.forEach(function(c) { if (c.style.borderColor === 'rgb(0, 255, 136)') online++; });
+  document.getElementById('online-count').textContent = online;
+}
+
+// 显示告警
+function showAlert(alert) {
+  var list = document.getElementById('alert-list');
+  var empty = list.querySelector('div[style]');
+  if (empty) empty.remove();
+
+  var now = new Date();
+  var time = now.getHours().toString().padStart(2,'0') + ':' +
+             now.getMinutes().toString().padStart(2,'0') + ':' +
+             now.getSeconds().toString().padStart(2,'0');
+
+  var item = document.createElement('div');
+  item.className = 'alert-item';
+  item.innerHTML = '<span class="time">' + time + '</span>' +
+    '<b>' + alert.device_id + '</b> ' + (alert.rule || '') + ': ' + (alert.message || '');
+  list.prepend(item);
+
+  // 保留最新8条告警显示
+  var items = list.querySelectorAll('.alert-item');
+  if (items.length > 8) items[items.length-1].remove();
+}
+
+function setText(id, text, color) {
+  var el = document.getElementById(id);
+  if (el) {
+    el.textContent = text;
+    if (color) el.style.color = color;
+  }
+}
+
+// 遥控指令下发
+function sendCommand(cmd) {
+  var deviceId = document.getElementById('cmd-device').value;
+  var result = document.getElementById('cmd-result');
+  result.textContent = '下发中...';
+
+  fetch('/api/v1/commands', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ device_id: deviceId, command: cmd, params: '{}' })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.code === 0) {
+      result.innerHTML = '<span style="color:#00ff88">指令下发成功: ' + cmd + ' → ' + deviceId + ' (QoS=2)</span>';
+    } else {
+      result.innerHTML = '<span style="color:#ff4444">下发失败: ' + data.message + '</span>';
+    }
+  })
+  .catch(function(err) {
+    result.innerHTML = '<span style="color:#ff4444">网络错误: ' + err.message + '</span>';
+  });
+}
+
+// 启动
+connectWS();
+</script>
+</body>
+</html>

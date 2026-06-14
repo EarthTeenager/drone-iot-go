@@ -1,0 +1,62 @@
+# docker-compose.yml
+# 一键启动 MySQL + Redis + EMQX 中间件，支撑IoT数据链路
+
+version: "3.8"
+
+services:
+  # MySQL 8.0 — 持久化存储无人机设备、状态、指令记录
+  mysql:
+    image: mysql:8.0
+    container_name: drone-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: drone_iot
+      MYSQL_CHARSET: utf8mb4
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Redis 7 — 设备状态缓存 + 分布式锁 + 会话管理
+  redis:
+    image: redis:7-alpine
+    container_name: drone-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # EMQX 5 — MQTT Broker，无人机设备消息中间件
+  emqx:
+    image: emqx/emqx:5.3.0
+    container_name: drone-emqx
+    restart: unless-stopped
+    ports:
+      - "1883:1883"   # MQTT端口
+      - "18083:18083"  # Dashboard管理页面
+    environment:
+      EMQX_DASHBOARD__DEFAULT_USERNAME: admin
+      EMQX_DASHBOARD__DEFAULT_PASSWORD: public
+    healthcheck:
+      test: ["CMD", "emqx", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  mysql_data:
+  redis_data:

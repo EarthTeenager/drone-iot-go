@@ -1,0 +1,23 @@
+# 配置文件 config.yaml
+# 本地开发默认配置，可通过环境变量覆盖
+
+server:
+  port: "8080"
+
+mysql:
+  host: "127.0.0.1"
+  port: "3306"
+  user: "root"
+  password: "root123"
+  dbname: "drone_iot"
+
+redis:
+  addr: "127.0.0.1:6379"
+  password: ""
+  db: 0
+
+mqtt:
+  broker: "tcp://127.0.0.1:1883"
+  client_id: "drone-server"
+  username: "admin"
+  password: "public"
