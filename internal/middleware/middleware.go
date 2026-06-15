@@ -10,7 +10,7 @@ import (
 )
 
 // Recovery 全局Panic Recovery中间件，确保无panic崩溃
-// JD-任职技能2：全局异常封装齐全
+// 技能2：全局异常封装齐全
 func Recovery() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
@@ -30,7 +30,7 @@ func Recovery() gin.HandlerFunc {
 }
 
 // RequestLogger 请求日志中间件，记录耗时、IP、路径
-// JD-任职技能2：Gin中间件完整落地
+// 技能2：Gin中间件完整落地
 func RequestLogger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()

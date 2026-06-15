@@ -19,7 +19,7 @@ func (r *DeviceStatusRepo) Insert(s *model.DeviceStatus) error {
 }
 
 // FindByDeviceID 按设备ID分页查询历史状态，命中 idx_device_ts 联合索引
-// JD-岗位职责4：历史数据查询接口，利用索引避免全表扫描
+// 职责4：历史数据查询接口，利用索引避免全表扫描
 func (r *DeviceStatusRepo) FindByDeviceID(deviceID string, limit, offset int) ([]model.DeviceStatus, int64, error) {
 	var total int64
 	var records []model.DeviceStatus

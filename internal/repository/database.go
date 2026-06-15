@@ -14,12 +14,12 @@ import (
 var DB *gorm.DB
 
 // InitDB 初始化MySQL连接、GORM自动迁移建表、配置慢SQL日志
-// JD-任职技能5：MySQL索引设计、GORM复杂查询示例
+// 技能5：MySQL索引设计、GORM复杂查询示例
 func InitDB(dsn string) error {
 	var err error
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
 		// 慢SQL日志：阈值200ms，输出执行计划和SQL语句
-		// JD-岗位职责4：慢SQL治理方案落地，使用Explain分析执行计划
+		// 职责4：慢SQL治理方案落地，使用Explain分析执行计划
 		Logger: logger.New(
 			log.Default(),
 			logger.Config{

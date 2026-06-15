@@ -11,7 +11,7 @@ import (
 )
 
 // DeviceHandler 设备管理接口处理器
-// JD-岗位职责6：设备管理接口，统一返回JSON格式
+// 职责6：设备管理接口，统一返回JSON格式
 type DeviceHandler struct {
 	deviceService *service.DeviceService
 }
@@ -22,7 +22,7 @@ func NewDeviceHandler(ds *service.DeviceService) *DeviceHandler {
 }
 
 // ==================== 统一响应结构 ====================
-// JD-岗位职责6：统一接口返回结构
+// 职责6：统一接口返回结构
 type Response struct {
 	Code    int         `json:"code"`
 	Message string      `json:"message"`
@@ -53,7 +53,7 @@ func (h *DeviceHandler) ListDevices(c *gin.Context) {
 }
 
 // SendCommand POST /api/v1/commands 下发遥控指令
-// JD-岗位职责2：指令下发接口
+// 职责2：指令下发接口
 func (h *DeviceHandler) SendCommand(c *gin.Context) {
 	var req struct {
 		DeviceID string `json:"device_id" binding:"required"`
@@ -83,7 +83,7 @@ func (h *DeviceHandler) SendCommand(c *gin.Context) {
 }
 
 // GetDeviceHistory GET /api/v1/history/:device_id 查询设备历史数据
-// JD-岗位职责4：历史数据查询接口
+// 职责4：历史数据查询接口
 func (h *DeviceHandler) GetDeviceHistory(c *gin.Context) {
 	deviceID := c.Param("device_id")
 	if deviceID == "" {

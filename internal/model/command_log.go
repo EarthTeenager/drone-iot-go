@@ -3,7 +3,7 @@ package model
 import "time"
 
 // CommandLog 指令下发记录表 command_logs
-// JD-岗位职责2：遥控指令下行精准下发，完整记录指令下发链路
+// 职责2：遥控指令下行精准下发，完整记录指令下发链路
 type CommandLog struct {
 	ID         uint      `gorm:"primaryKey;autoIncrement" json:"id"`
 	DeviceID   string    `gorm:"type:varchar(64);index:idx_cmd_device;not null;comment:目标设备编号" json:"device_id"`

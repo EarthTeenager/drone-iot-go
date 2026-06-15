@@ -3,7 +3,7 @@ package model
 import "time"
 
 // Drone 无人机设备表 drones
-// JD-岗位职责4：MySQL数据表结构设计，设备ID、在线状态建立索引
+// 职责4：MySQL数据表结构设计，设备ID、在线状态建立索引
 type Drone struct {
 	ID        uint      `gorm:"primaryKey;autoIncrement" json:"id"`
 	DeviceID  string    `gorm:"type:varchar(64);uniqueIndex:idx_device_id;not null;comment:设备唯一编号" json:"device_id"`

@@ -15,8 +15,8 @@ import (
 var GlobalHub *Hub
 
 // ==================== WebSocket连接管理器 Hub ====================
-// JD-岗位职责3：WebSocket长连接设备状态、告警数据主动向前端实时推送
-// JD-任职技能1：Go goroutine/channel并发模型运用，长连接协程管理无泄漏
+// 职责3：WebSocket长连接设备状态、告警数据主动向前端实时推送
+// 技能1：Go goroutine/channel并发模型运用，长连接协程管理无泄漏
 
 // Hub 管理所有WebSocket客户端连接，goroutine+channel并发模型
 type Hub struct {
@@ -54,7 +54,7 @@ func NewHub(parentCtx context.Context) *Hub {
 }
 
 // Run 启动Hub主循环（一个goroutine处理所有Client注册/注销/广播）
-// JD-任职技能1：goroutine无泄漏，通过context统一控制生命周期
+// 技能1：goroutine无泄漏，通过context统一控制生命周期
 func (h *Hub) Run() {
 	log.Println("[WebSocket] Hub启动")
 	for {
@@ -95,7 +95,7 @@ func (h *Hub) Run() {
 }
 
 // BroadcastJSON 将数据序列化JSON后广播给所有在线前端
-// JD-岗位职责3：服务端主动向前端实时推送设备状态
+// 职责3：服务端主动向前端实时推送设备状态
 func (h *Hub) BroadcastJSON(v interface{}) {
 	data, err := json.Marshal(v)
 	if err != nil {
@@ -117,7 +117,7 @@ func (h *Hub) ClientCount() int {
 }
 
 // shutdown 安全关闭所有客户端连接
-// JD-任职技能1：长连接协程管理无泄漏
+// 技能1：长连接协程管理无泄漏
 func (h *Hub) shutdown() {
 	h.mu.Lock()
 	defer h.mu.Unlock()
@@ -138,7 +138,7 @@ var upgrader = websocket.Upgrader{
 }
 
 // HandleConnection 处理WebSocket握手请求，升级为长连接
-// JD-任职技能4：WebSocket握手、心跳、断线重连完整实现
+// 技能4：WebSocket握手、心跳、断线重连完整实现
 func (h *Hub) HandleConnection(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -163,7 +163,7 @@ func (h *Hub) HandleConnection(w http.ResponseWriter, r *http.Request) {
 }
 
 // readPump 读协程：接收前端消息（Pong心跳响应）
-// JD-任职技能4：心跳检测实现
+// 技能4：心跳检测实现
 func (c *Client) readPump() {
 	defer func() {
 		c.cancel()
@@ -195,7 +195,7 @@ func (c *Client) readPump() {
 }
 
 // writePump 写协程：向前端发送数据（Ping心跳 + 业务数据推送）
-// JD-任职技能4：心跳检测，定时30s发送Ping
+// 技能4：心跳检测，定时30s发送Ping
 func (c *Client) writePump() {
 	ticker := time.NewTicker(30 * time.Second) // 30s Ping/Pong心跳
 	defer func() {

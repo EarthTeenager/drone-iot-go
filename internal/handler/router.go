@@ -9,8 +9,8 @@ import (
 )
 
 // SetupRouter 注册Gin路由、中间件、WebSocket端点
-// JD-岗位职责1：Gin分层架构设计，路由分组，可拆分微服务
-// JD-任职技能2：路由分组、中间件、全局异常封装齐全
+// 职责1：Gin分层架构设计，路由分组，可拆分微服务
+// 技能2：路由分组、中间件、全局异常封装齐全
 func SetupRouter(ds *service.DeviceService) *gin.Engine {
 	r := gin.New()
 
@@ -30,7 +30,7 @@ func SetupRouter(ds *service.DeviceService) *gin.Engine {
 	r.Static("/static", "./static")
 
 	// API v1 路由分组，每组独立Handler文件，方便后续微服务拆分
-	// JD-岗位职责1：可拆分微服务，支撑高并发低延迟场景
+	// 职责1：可拆分微服务，支撑高并发低延迟场景
 	v1 := r.Group("/api/v1")
 	{
 		deviceHandler := NewDeviceHandler(ds)

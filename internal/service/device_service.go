@@ -13,7 +13,7 @@ import (
 
 // DeviceService 设备业务逻辑层
 // 协调MQTT数据 → 入库MySQL → 写Redis缓存 → WebSocket广播 → 告警检查
-// JD-岗位职责2：收到设备上报数据后入库+缓存+广播
+// 职责2：收到设备上报数据后入库+缓存+广播
 type DeviceService struct {
 	droneRepo  *repository.DroneRepo
 	statusRepo *repository.DeviceStatusRepo
@@ -37,7 +37,7 @@ func NewDeviceService(
 }
 
 // HandleDeviceData MQTT收到设备上行数据后的核心处理链路
-// JD-岗位职责2：上行数据 → 入库MySQL + 写Redis热点缓存 + WebSocket广播 + 告警检查
+// 职责2：上行数据 → 入库MySQL + 写Redis热点缓存 + WebSocket广播 + 告警检查
 func (s *DeviceService) HandleDeviceData(data mqtt.DeviceData) {
 	ctx := context.Background()
 
@@ -99,7 +99,7 @@ func (s *DeviceService) HandleDeviceData(data mqtt.DeviceData) {
 }
 
 // SendCommand 下发遥控指令到指定设备
-// JD-岗位职责2：遥控指令下行精准下发
+// 职责2：遥控指令下行精准下发
 func (s *DeviceService) SendCommand(cmd mqtt.CommandPayload) (*model.CommandLog, error) {
 	// 1. 分布式锁防重复（同一设备同一指令5s内不能重复下发）
 	lockKey := "lock:cmd:" + cmd.DeviceID + ":" + cmd.Command

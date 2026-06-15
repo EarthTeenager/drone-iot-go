@@ -11,7 +11,7 @@ import (
 )
 
 // DeviceData 无人机上行状态数据结构
-// JD-岗位职责2：解析GPS、高度、电量、姿态数据
+// 职责2：解析GPS、高度、电量、姿态数据
 type DeviceData struct {
 	DeviceID   string  `json:"device_id"`
 	Latitude   float64 `json:"latitude"`
@@ -28,7 +28,7 @@ type DeviceData struct {
 }
 
 // CommandPayload 下行遥控指令
-// JD-岗位职责2：下发返航、起飞、锁定电机等遥控指令
+// 职责2：下发返航、起飞、锁定电机等遥控指令
 type CommandPayload struct {
 	DeviceID string `json:"device_id"`
 	Command  string `json:"command"` // takeoff / land / return_home / lock_motor
@@ -39,7 +39,7 @@ type CommandPayload struct {
 type DataCallback func(data DeviceData)
 
 // Client EMQX MQTT客户端封装
-// JD-任职技能3：MQTT协议+EMQX实战：订阅、发布、重连、QoS配置完整实现
+// 技能3：MQTT协议+EMQX实战：订阅、发布、重连、QoS配置完整实现
 type Client struct {
 	client    mqtt.Client
 	mu        sync.RWMutex
@@ -66,7 +66,7 @@ func NewClient(broker, username, password, clientID string) *Client {
 		SetKeepAlive(30 * time.Second).
 		SetPingTimeout(10 * time.Second).
 		SetConnectTimeout(10 * time.Second).
-		SetOnConnectHandler(c.onConnect).            // 连接成功回调
+		SetOnConnectHandler(c.onConnect). // 连接成功回调
 		SetConnectionLostHandler(c.onConnectionLost) // 断线回调
 
 	c.client = mqtt.NewClient(opts)
@@ -74,7 +74,7 @@ func NewClient(broker, username, password, clientID string) *Client {
 }
 
 // Connect 建立MQTT连接，失败时指数退避重试
-// JD-岗位职责2：IoT设备MQTT接入，断线自动重连、退避重试
+// 职责2：IoT设备MQTT接入，断线自动重连、退避重试
 func (c *Client) Connect() error {
 	for {
 		token := c.client.Connect()
@@ -100,7 +100,7 @@ func (c *Client) Connect() error {
 }
 
 // Subscribe 订阅无人机上行topic，QoS=1保证至少到达一次
-// JD-任职技能3：订阅QoS配置
+// 技能3：订阅QoS配置
 func (c *Client) Subscribe(topic string) error {
 	token := c.client.Subscribe(topic, 1, c.messageHandler)
 	if token.Wait() && token.Error() != nil {
@@ -111,7 +111,7 @@ func (c *Client) Subscribe(topic string) error {
 }
 
 // PublishCommand 下发遥控指令到指定设备，QoS=2确保精确一次送达
-// JD-任职技能3：发布QoS=2配置
+// 技能3：发布QoS=2配置
 func (c *Client) PublishCommand(cmd CommandPayload) (uint16, error) {
 	data, _ := json.Marshal(cmd)
 	topic := fmt.Sprintf("drone/%s/command", cmd.DeviceID)
@@ -174,7 +174,7 @@ func (c *Client) onConnectionLost(client mqtt.Client, err error) {
 }
 
 // messageHandler 处理设备上行消息
-// JD-岗位职责2：收到设备上报数据后入库MySQL+写入Redis+投递WebSocket
+// 职责2：收到设备上报数据后入库MySQL+写入Redis+投递WebSocket
 func (c *Client) messageHandler(client mqtt.Client, msg mqtt.Message) {
 	var data DeviceData
 	if err := json.Unmarshal(msg.Payload(), &data); err != nil {

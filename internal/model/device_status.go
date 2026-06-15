@@ -3,7 +3,7 @@ package model
 import "time"
 
 // DeviceStatus 设备实时状态上报表 device_status
-// JD-岗位职责4：数据表结构设计，按时间建立索引用于历史数据查询
+// 职责4：数据表结构设计，按时间建立索引用于历史数据查询
 type DeviceStatus struct {
 	ID         uint      `gorm:"primaryKey;autoIncrement" json:"id"`
 	DeviceID   string    `gorm:"type:varchar(64);index:idx_device_ts,priority:1;not null;comment:设备编号" json:"device_id"`

@@ -33,7 +33,7 @@ func InitRedis(addr, password string, db int) error {
 }
 
 // SetDeviceOnline 设置设备在线状态到Redis缓存（Hash结构）
-// JD-任职技能5：Redis内存模型、热点设备状态缓存
+// 技能5：Redis内存模型、热点设备状态缓存
 // Key: device:{deviceID} Hash字段: status/last_seen/latitude/longitude/altitude/battery
 func SetDeviceOnline(ctx context.Context, deviceID string, status map[string]interface{}) error {
 	key := fmt.Sprintf("device:%s", deviceID)
@@ -55,7 +55,7 @@ func SetDeviceStatusTTL(ctx context.Context, deviceID string) error {
 }
 
 // TryLock 分布式锁：SET NX + Lua脚本原子释放，防止重复下发遥控指令
-// JD-岗位职责5：Redis分布式锁实现
+// 职责5：Redis分布式锁实现
 func TryLock(ctx context.Context, key string, ttl time.Duration) (bool, error) {
 	return RDB.SetNX(ctx, key, "locked", ttl).Result()
 }
@@ -74,7 +74,7 @@ func Unlock(ctx context.Context, key string) error {
 }
 
 // SetSession 存储WebSocket会话
-// JD-岗位职责5：Redis会话管理
+// 职责5：Redis会话管理
 func SetSession(ctx context.Context, sessionID string, data string) error {
 	return RDB.Set(ctx, fmt.Sprintf("session:%s", sessionID), data, 1*time.Hour).Err()
 }
